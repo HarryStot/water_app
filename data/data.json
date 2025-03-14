@@ -207,60 +207,29 @@
               }
             },
             "watering": {
-              "last_watered": "2025-03-11T08:12:42Z",
+              "last_watered": "2025-03-11T08:12:00Z",
               "auto_watering": true,
               "next_scheduled": "2025-03-15T08:00:00Z",
               "history": [
-                {"timestamp": "2025-03-03T08:22:15Z", "amount": 75, "type": "automatic"},
-                {"timestamp": "2025-03-07T08:19:33Z", "amount": 75, "type": "automatic"},
-                {"timestamp": "2025-03-11T08:12:42Z", "amount": 75, "type": "automatic"}
+                {"timestamp": "2025-03-01T10:12:45Z", "amount": 75, "type": "automatic"},
+                {"timestamp": "2025-03-07T12:35:32Z", "amount": 75, "type": "manual"},
+                {"timestamp": "2025-03-11T08:12:00Z", "amount": 75, "type": "automatic"}
               ],
               "reservoir": {
                 "level": 350,
                 "capacity": 750,
                 "unit": "ml",
-                "last_refilled": "2025-03-10T18:45:33Z"
+                "last_refilled": "2025-03-10T19:00:33Z"
               }
             },
             "status": {
               "health": "good",
               "warnings": [],
-              "last_maintenance": "2025-03-10T18:45:33Z"
+              "last_maintenance": "2025-03-10T19:00:33Z"
             }
           }
         ]
       }
-    ],
-    "system": {
-      "version": "1.0.0",
-      "uptime": 864000,
-      "notifications": [
-        {
-          "id": "notif_001",
-          "type": "warning",
-          "device_id": "snail_02",
-          "plant_id": "plant_02",
-          "message": "Soil moisture below threshold. Watering scheduled.",
-          "timestamp": "2025-03-14T08:15:00Z",
-          "read": false
-        },
-        {
-          "id": "notif_002",
-          "type": "info",
-          "device_id": "snail_02",
-          "message": "Battery charging initiated.",
-          "timestamp": "2025-03-14T08:10:00Z",
-          "read": true
-        },
-        {
-          "id": "notif_003",
-          "type": "alert",
-          "device_id": "snail_02",
-          "message": "Reservoir level below 50%. Consider refilling.",
-          "timestamp": "2025-03-13T18:30:00Z",
-          "read": false
-        }
-      ],
-      "last_server_sync": "2025-03-14T08:25:42Z"
-    }
+    ]
   }
+  
