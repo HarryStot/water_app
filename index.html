@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Watering System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-green-700">Plant Guardian</h1>
+            <p class="text-gray-600">Smart Plant Watering System</p>
+        </header>
+
+        <!-- Status Overview -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Current Status</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Moisture -->
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-500">Soil Moisture</h3>
+                    <div class="flex items-center mt-2">
+                        <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span id="moisture-value" class="text-2xl font-bold text-blue-700">--</span>
+                        </div>
+                        <div class="ml-4">
+                            <div class="h-2 w-32 bg-gray-200 rounded">
+                                <div id="moisture-bar" class="h-2 bg-blue-600 rounded" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Last updated: <span id="last-updated">--</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Battery -->
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-500">Battery</h3>
+                    <div class="flex items-center mt-2">
+                        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                            <span id="battery-value" class="text-2xl font-bold text-green-700">--</span>
+                        </div>
+                        <div class="ml-4">
+                            <div class="h-2 w-32 bg-gray-200 rounded">
+                                <div id="battery-bar" class="h-2 bg-green-600 rounded" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Estimated days left: <span id="days-left">--</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Last Watering -->
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-500">Last Watering</h3>
+                    <div class="flex items-center mt-2">
+                        <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
+                            <span class="text-2xl font-bold text-purple-700">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="ml-4">
+                            <p id="last-watering" class="text-sm font-medium">--</p>
+                            <p id="watering-ago" class="text-xs text-gray-500">--</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Status -->
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-500">System Status</h3>
+                    <div class="flex items-center mt-2">
+                        <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <span id="status-icon" class="text-2xl font-bold text-yellow-700">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="ml-4">
+                            <p id="system-status" class="text-sm font-medium">--</p>
+                            <p id="connection-status" class="text-xs text-gray-500">--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Control Panel</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Manual Controls -->
+                <div>
+                    <h3 class="text-lg font-medium mb-3">Manual Controls</h3>
+                    <div class="space-y-4">
+                        <button id="water-now-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Water Now
+                        </button>
+                        <div id="watering-status" class="hidden text-sm text-green-600 mt-2">
+                            Watering command sent!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div>
+                    <h3 class="text-lg font-medium mb-3">Settings</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Moisture Threshold (%)</label>
+                            <div class="flex items-center mt-1">
+                                <input type="range" id="moisture-threshold" min="10" max="70" value="30" class="w-48 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <span id="threshold-value" class="ml-3 text-sm font-medium">30%</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Water when moisture falls below this level</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Watering Duration (seconds)</label>
+                            <div class="flex items-center mt-1">
+                                <input type="range" id="watering-duration" min="1" max="20" value="5" class="w-48 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <span id="duration-value" class="ml-3 text-sm font-medium">5s</span>
+                            </div>
+                        </div>
+                        
+                        <button id="save-settings-btn" class="mt-4 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Save Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Data -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Historical Data</h2>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Time Range</label>
+                <select id="time-range" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <option value="day">Last 24 Hours</option>
+                    <option value="week">Last Week</option>
+                    <option value="month">Last Month</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Moisture Chart -->
+                <div>
+                    <h3 class="text-lg font-medium mb-3">Soil Moisture</h3>
+                    <div class="bg-gray-50 p-3 rounded-lg" style="height: 300px;">
+                        <canvas id="moisture-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Battery Chart -->
+                <div>
+                    <h3 class="text-lg font-medium mb-3">Battery Level</h3>
+                    <div class="bg-gray-50 p-3 rounded-lg" style="height: 300px;">
+                        <canvas id="battery-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Watering Events Table -->
+                <div class="lg:col-span-2">
+                    <h3 class="text-lg font-medium mb-3">Watering Events</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Moisture Before</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trigger</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="watering-events" class="bg-white divide-y divide-gray-200">
+                                <!-- Watering events will be inserted here -->
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Main JavaScript for the application
+        const REPO_OWNER = "HarryStot";
+        const REPO_NAME = "water_app";
+        const DATA_PATH = "data/";
+        const COMMANDS_PATH = "commands/water_now.json";
+        const SETTINGS_PATH = "settings/config.json";
+        
+        // Current data
+        let currentData = null;
+        let historicalData = [];
+        let systemSettings = {
+            moistureThreshold: 30,
+            wateringDuration: 5
+        };
+        
+        // DOM elements
+        const moistureValue = document.getElementById('moisture-value');
+        const moistureBar = document.getElementById('moisture-bar');
+        const batteryValue = document.getElementById('battery-value');
+        const batteryBar = document.getElementById('battery-bar');
+        const lastUpdated = document.getElementById('last-updated');
+        const daysLeft = document.getElementById('days-left');
+        const lastWatering = document.getElementById('last-watering');
+        const wateringAgo = document.getElementById('watering-ago');
+        const systemStatus = document.getElementById('system-status');
+        const connectionStatus = document.getElementById('connection-status');
+        const waterNowBtn = document.getElementById('water-now-btn');
+        const wateringStatus = document.getElementById('watering-status');
+        const moistureThreshold = document.getElementById('moisture-threshold');
+        const thresholdValue = document.getElementById('threshold-value');
+        const wateringDuration = document.getElementById('watering-duration');
+        const durationValue = document.getElementById('duration-value');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const timeRange = document.getElementById('time-range');
+        const wateringEvents = document.getElementById('watering-events');
+        
+        // Charts
+        let moistureChart;
+        let batteryChart;
+        
+        // Initialize the application
+        async function init() {
+            // Set up event listeners
+            waterNowBtn.addEventListener('click', handleWaterNow);
+            moistureThreshold.addEventListener('input', updateThresholdValue);
+            wateringDuration.addEventListener('input', updateDurationValue);
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            timeRange.addEventListener('change', updateCharts);
+            
+            // Load settings
+            await loadSettings();
+            
+            // Load initial data
+            await loadLatestData();
+            
+            // Load historical data
+            await loadHistoricalData();
+            
+            // Initialize charts
+            initCharts();
+            
+            // Update the UI
+            updateUI();
+            
+            // Set up refresh interval (every 5 minutes)
+            // Continuing the script from the previous page
+            setInterval(async () => {
+                    await loadLatestData();
+                    updateUI();
+                }, 5 * 60 * 1000);
+            
+            // Check connection every minute
+            setInterval(checkConnection, 60 * 1000);
+        }
+        
+        // Load the latest data from GitHub
+        async function loadLatestData() {
+            try {
+                // Get today's date in the format used for filenames
+                const today = new Date();
+                const dateStr = `${today.getFullYear()}_${String(today.getMonth() + 1).padStart(2, '0')}_${String(today.getDate()).padStart(2, '0')}`;
+                const dataUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/data/data_${dateStr}.json`;
+                
+                const response = await fetch(dataUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    // Get the latest data point
+                    currentData = data[data.length - 1];
+                    console.log("Latest data loaded:", currentData);
+                    return true;
+                }
+            } catch (error) {
+                console.error("Error loading latest data:", error);
+                // Try to load yesterday's data if today's isn't available
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const dateStr = `${yesterday.getFullYear()}_${String(yesterday.getMonth() + 1).padStart(2, '0')}_${String(yesterday.getDate()).padStart(2, '0')}`;
+                try {
+                    const dataUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/data/data_${dateStr}.json`;
+                    const response = await fetch(dataUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        // Get the latest data point
+                        currentData = data[data.length - 1];
+                        console.log("Latest data loaded from yesterday:", currentData);
+                        return true;
+                    }
+                } catch (innerError) {
+                    console.error("Error loading yesterday's data:", innerError);
+                    systemStatus.textContent = "Offline";
+                    connectionStatus.textContent = "No recent data available";
+                    return false;
+                }
+            }
+            return false;
+        }
+        
+        // Load historical data for charts
+        async function loadHistoricalData() {
+            historicalData = [];
+            
+            // Determine date range based on selected time range
+            const endDate = new Date();
+            let startDate = new Date();
+            
+            switch (timeRange.value) {
+                case 'day':
+                    startDate.setDate(startDate.getDate() - 1);
+                    break;
+                case 'week':
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setMonth(startDate.getMonth() - 1);
+                    break;
+            }
+            
+            // Loop through each day in the range
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                const dateStr = `${d.getFullYear()}_${String(d.getMonth() + 1).padStart(2, '0')}_${String(d.getDate()).padStart(2, '0')}`;
+                try {
+                    const dataUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/data/data_${dateStr}.json`;
+                    const response = await fetch(dataUrl);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (Array.isArray(data)) {
+                            historicalData = historicalData.concat(data);
+                        }
+                    }
+                } catch (error) {
+                    console.log(`No data for ${dateStr}`);
+                }
+            }
+            
+            console.log(`Loaded ${historicalData.length} historical data points`);
+            
+            // Sort by timestamp
+            historicalData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            
+            // Update the watering events table
+            updateWateringEvents();
+            
+            return historicalData.length > 0;
+        }
+        
+        // Update the watering events table
+        function updateWateringEvents() {
+            // Clear existing rows
+            wateringEvents.innerHTML = '';
+            
+            // Filter for entries where pump status is "on" or there's a new last_watering timestamp
+            let lastWateringTime = '';
+            const events = historicalData.filter(entry => {
+                if (entry.pump_status === "on" || (entry.last_watering && entry.last_watering !== lastWateringTime && entry.last_watering !== "never")) {
+                    lastWateringTime = entry.last_watering;
+                    return true;
+                }
+                return false;
+            });
+            
+            if (events.length === 0) {
+                wateringEvents.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No watering events found</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Find the moisture level before each watering event
+            events.forEach((event, index) => {
+                // Find the entry right before this watering event
+                let prevIndex = historicalData.findIndex(entry => entry.timestamp === event.timestamp) - 1;
+                let moistureBefore = prevIndex >= 0 ? historicalData[prevIndex].moisture : "--";
+                
+                // Determine if it was automatic or manual (just an estimate)
+                let trigger = moistureBefore < systemSettings.moistureThreshold ? "Automatic" : "Manual";
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${formatTimestamp(event.last_watering || event.timestamp)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${typeof moistureBefore === "number" ? moistureBefore.toFixed(1) + "%" : moistureBefore}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${trigger}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${systemSettings.wateringDuration}s
+                    </td>
+                `;
+                wateringEvents.appendChild(row);
+            });
+        }
+        
+        // Initialize the charts
+        function initCharts() {
+            const ctx1 = document.getElementById('moisture-chart').getContext('2d');
+            moistureChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Soil Moisture (%)',
+                        backgroundColor: 'rgba(66, 153, 225, 0.2)',
+                        borderColor: 'rgba(66, 153, 225, 1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        data: []
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            const ctx2 = document.getElementById('battery-chart').getContext('2d');
+            batteryChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Battery Level (%)',
+                        backgroundColor: 'rgba(72, 187, 120, 0.2)',
+                        borderColor: 'rgba(72, 187, 120, 1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        data: []
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            updateCharts();
+        }
+        
+        // Update the charts with historical data
+        function updateCharts() {
+            // Prepare chart data
+            const moistureData = historicalData.map(entry => ({
+                x: new Date(entry.timestamp),
+                y: entry.moisture
+            }));
+            
+            const batteryData = historicalData.map(entry => ({
+                x: new Date(entry.timestamp),
+                y: entry.battery
+            }));
+            
+            // Update chart datasets
+            moistureChart.data.datasets[0].data = moistureData;
+            batteryChart.data.datasets[0].data = batteryData;
+            
+            // Adjust time unit based on selected range
+            let timeUnit = 'hour';
+            switch (timeRange.value) {
+                case 'day':
+                    timeUnit = 'hour';
+                    break;
+                case 'week':
+                    timeUnit = 'day';
+                    break;
+                case 'month':
+                    timeUnit = 'day';
+                    break;
+            }
+            
+            moistureChart.options.scales.x.time.unit = timeUnit;
+            batteryChart.options.scales.x.time.unit = timeUnit;
+            
+            // Update the charts
+            moistureChart.update();
+            batteryChart.update();
+        }
+        
+        // Update the UI with the latest data
+        function updateUI() {
+            if (!currentData) {
+                console.log("No current data available");
+                return;
+            }
+            
+            // Update moisture
+            moistureValue.textContent = `${currentData.moisture.toFixed(1)}%`;
+            moistureBar.style.width = `${currentData.moisture}%`;
+            
+            // Update battery
+            batteryValue.textContent = `${currentData.battery.toFixed(1)}%`;
+            batteryBar.style.width = `${currentData.battery}%`;
+            
+            // Update last updated time
+            lastUpdated.textContent = formatTimestamp(currentData.timestamp, true);
+            
+            // Update estimated days left (rough estimate)
+            const daysEstimate = (currentData.battery / 100 * 30).toFixed(1);
+            daysLeft.textContent = `~${daysEstimate} days`;
+            
+            // Update last watering
+            if (currentData.last_watering && currentData.last_watering !== "never") {
+                lastWatering.textContent = formatTimestamp(currentData.last_watering);
+                const timeAgo = getTimeAgo(currentData.last_watering);
+                wateringAgo.textContent = `${timeAgo} ago`;
+            } else {
+                lastWatering.textContent = "No data";
+                wateringAgo.textContent = "";
+            }
+            
+            // Update system status
+            const lastUpdateTime = new Date(currentData.timestamp);
+            const currentTime = new Date();
+            const hoursSinceUpdate = (currentTime - lastUpdateTime) / (1000 * 60 * 60);
+            
+            if (hoursSinceUpdate < 1) {
+                systemStatus.textContent = "Online";
+                connectionStatus.textContent = "Connected";
+                document.getElementById('status-icon').style.color = "#047857"; // Green
+            } else if (hoursSinceUpdate < 3) {
+                systemStatus.textContent = "Idle";
+                connectionStatus.textContent = `Last seen ${Math.round(hoursSinceUpdate * 60)} min ago`;
+                document.getElementById('status-icon').style.color = "#D97706"; // Amber
+            } else {
+                systemStatus.textContent = "Offline";
+                connectionStatus.textContent = `Last seen ${Math.round(hoursSinceUpdate)} hours ago`;
+                document.getElementById('status-icon').style.color = "#DC2626"; // Red
+            }
+        }
+        
+        // Handle Water Now button
+        async function handleWaterNow() {
+            // Disable button temporarily
+            waterNowBtn.disabled = true;
+            waterNowBtn.classList.add('opacity-50');
+            
+            try {
+                // First, try to get the current water_now.json if it exists
+                let currentContent = null;
+                let sha = null;
+                
+                try {
+                    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${COMMANDS_PATH}`;
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        sha = data.sha;
+                        // Decode content
+                        currentContent = JSON.parse(atob(data.content));
+                    }
+                } catch (error) {
+                    console.log("No existing water_now.json file, will create one");
+                }
+                
+                // Prepare the new content
+                const waterCommand = {
+                    water_now: true,
+                    requested_at: new Date().toISOString(),
+                    duration: systemSettings.wateringDuration
+                };
+                
+                // Encode the content to base64
+                const encodedContent = btoa(JSON.stringify(waterCommand));
+                
+                // Prepare the request data
+                const requestData = {
+                    message: "Request manual watering",
+                    content: encodedContent
+                };
+                
+                // If we have an existing file, include its SHA to update it
+                if (sha) {
+                    requestData.sha = sha;
+                }
+                
+                // Send the PUT request to GitHub API
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${COMMANDS_PATH}`;
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (response.ok) {
+                    // Show success message
+                    wateringStatus.classList.remove('hidden');
+                    setTimeout(() => {
+                        wateringStatus.classList.add('hidden');
+                    }, 5000);
+                } else {
+                    throw new Error(`GitHub API responded with status ${response.status}`);
+                }
+            } catch (error) {
+                console.error("Error sending watering command:", error);
+                wateringStatus.textContent = "Error sending command!";
+                wateringStatus.classList.remove('hidden', 'text-green-600');
+                wateringStatus.classList.add('text-red-600');
+                setTimeout(() => {
+                    wateringStatus.classList.add('hidden');
+                    wateringStatus.classList.remove('text-red-600');
+                    wateringStatus.classList.add('text-green-600');
+                    wateringStatus.textContent = "Watering command sent!";
+                }, 5000);
+            } finally {
+                // Re-enable button after a short delay
+                setTimeout(() => {
+                    waterNowBtn.disabled = false;
+                    waterNowBtn.classList.remove('opacity-50');
+                }, 3000);
+            }
+        }
+        
+        // Load settings
+        async function loadSettings() {
+            try {
+                const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${SETTINGS_PATH}`;
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    systemSettings = data;
+                    
+                    // Update UI with loaded settings
+                    moistureThreshold.value = systemSettings.moistureThreshold;
+                    thresholdValue.textContent = `${systemSettings.moistureThreshold}%`;
+                    
+                    wateringDuration.value = systemSettings.wateringDuration;
+                    durationValue.textContent = `${systemSettings.wateringDuration}s`;
+                    
+                    return true;
+                }
+            } catch (error) {
+                console.log("No settings file found, using defaults");
+            }
+            
+            return false;
+        }
+        
+        // Save settings
+        async function saveSettings() {
+            // Disable button temporarily
+            saveSettingsBtn.disabled = true;
+            saveSettingsBtn.classList.add('opacity-50');
+            
+            try {
+                // Update settings object
+                systemSettings.moistureThreshold = parseInt(moistureThreshold.value);
+                systemSettings.wateringDuration = parseInt(wateringDuration.value);
+                
+                // First, try to get the current settings file if it exists
+                let sha = null;
+                
+                try {
+                    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${SETTINGS_PATH}`;
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        sha = data.sha;
+                    }
+                } catch (error) {
+                    console.log("No existing settings file, will create one");
+                }
+                
+                // Encode the content to base64
+                const encodedContent = btoa(JSON.stringify(systemSettings));
+                
+                // Prepare the request data
+                const requestData = {
+                    message: "Update system settings",
+                    content: encodedContent
+                };
+                
+                // If we have an existing file, include its SHA to update it
+                if (sha) {
+                    requestData.sha = sha;
+                }
+                
+                // Send the PUT request to GitHub API
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${SETTINGS_PATH}`;
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (response.ok) {
+                    // Show success message
+                    const savedText = document.createElement('span');
+                    savedText.textContent = "Settings saved!";
+                    savedText.className = "ml-2 text-green-600 text-sm";
+                    savedText.id = "saved-message";
+                    
+                    // Remove any existing message
+                    const existingMessage = document.getElementById('saved-message');
+                    if (existingMessage) {
+                        existingMessage.remove();
+                    }
+                    
+                    saveSettingsBtn.parentNode.appendChild(savedText);
+                    setTimeout(() => {
+                        savedText.remove();
+                    }, 5000);
+                } else {
+                    throw new Error(`GitHub API responded with status ${response.status}`);
+                }
+            } catch (error) {
+                console.error("Error saving settings:", error);
+                
+                // Show error message
+                const errorText = document.createElement('span');
+                errorText.textContent = "Error saving settings";
+                errorText.className = "ml-2 text-red-600 text-sm";
+                errorText.id = "saved-message";
+                
+                // Remove any existing message
+                const existingMessage = document.getElementById('saved-message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+                
+                saveSettingsBtn.parentNode.appendChild(errorText);
+                setTimeout(() => {
+                    errorText.remove();
+                }, 5000);
+            } finally {
+                // Re-enable button after a short delay
+                setTimeout(() => {
+                    saveSettingsBtn.disabled = false;
+                    saveSettingsBtn.classList.remove('opacity-50');
+                }, 3000);
+            }
+        }
+        
+        // Update threshold value display
+        function updateThresholdValue() {
+            thresholdValue.textContent = `${moistureThreshold.value}%`;
+        }
+        
+        // Update duration value display
+        function updateDurationValue() {
+            durationValue.textContent = `${wateringDuration.value}s`;
+        }
+        
+        // Check if we're still connected to the device
+        async function checkConnection() {
+            if (currentData) {
+                const lastUpdateTime = new Date(currentData.timestamp);
+                const currentTime = new Date();
+                const hoursSinceUpdate = (currentTime - lastUpdateTime) / (1000 * 60 * 60);
+                
+                if (hoursSinceUpdate > 1) {
+                    // Try to get fresh data
+                    await loadLatestData();
+                    updateUI();
+                }
+            }
+        }
+        
+        // Helper function to format timestamps
+        function formatTimestamp(timestamp, includeSeconds = false) {
+            if (!timestamp || timestamp === "never") {
+                return "Never";
+            }
+            
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) {
+                return timestamp; // Return as is if not a valid date
+            }
+            
+            const options = {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            
+            if (includeSeconds) {
+                options.second = '2-digit';
+            }
+            
+            return date.toLocaleDateString('en-US', options);
+        }
+        
+        // Helper function to get time ago
+        function getTimeAgo(timestamp) {
+            if (!timestamp || timestamp === "never") {
+                return "never";
+            }
+            
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) {
+                return "unknown";
+            }
+            
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) {
+                return `${seconds} seconds`;
+            }
+            
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) {
+                return `${minutes} minutes`;
+            }
+            
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) {
+                return `${hours} hours`;
+            }
+            
+            const days = Math.floor(hours / 24);
+            return `${days} days`;
+        }
+        
+        // Start the application
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
